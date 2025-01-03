@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+import "pixelfs/v1/fs.proto";
+
+package pixelfs.v1;
+option  go_package = "github.com/pixelfs/pixelfs/gen/pixelfs/v1";
+
+service LocationService {
+    rpc GetLocations(GetLocationsRequest) returns (GetLocationsResponse) {}
+    rpc GetLocationByContext(GetLocationByContextRequest) returns (GetLocationByContextResponse) {}
+    rpc AddLocation(AddLocationRequest) returns (AddLocationResponse) {}
+    rpc RemoveLocation(RemoveLocationRequest) returns (RemoveLocationResponse) {}
+}
+
+enum LocationType {
+    LOCAL = 0;
+}
+
+message Location {
+    string        id = 1;
+    string        node_id = 2;
+    string        name = 3;
+    LocationType  type = 4;
+    string        path = 5;
+    int64         block_size = 6;
+    int64         block_duration = 7;
+}
+
+message GetLocationByContextRequest {
+    FileContext context = 1;
+}
+
+message GetLocationByContextResponse {
+    Location location = 1;
+}
+
+message GetLocationsRequest {}
+
+message GetLocationsResponse {
+    repeated Location locations = 1;
+}
+
+message LocationCheckRequest {
+    string node_id = 1;
+    string path = 2;
+}
+
+message LocationCheckResponse {}
+
+message AddLocationRequest {
+    Location location = 1;
+}
+
+message AddLocationResponse {
+    Location location = 1;
+}
+
+message RemoveLocationRequest {
+    string location_id = 1;
+}
+
+message RemoveLocationResponse {}

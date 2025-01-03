@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+import "pixelfs/v1/fs.proto";
+import "pixelfs/v1/block.proto";
+
+package pixelfs.v1;
+option  go_package = "github.com/pixelfs/pixelfs/gen/pixelfs/v1";
+
+service StorageService {
+    rpc GetStorages(GetStoragesRequest) returns (GetStoragesResponse) {}
+    rpc AddStorage(AddStorageRequest) returns (AddStorageResponse) {}
+    rpc RemoveStorage(RemoveStorageRequest) returns (RemoveStorageResponse) {}
+    rpc GetStorageLinks(GetStorageLinksRequest) returns (GetStorageLinksResponse) {}
+    rpc AddStorageLink(AddStorageLinkRequest) returns (AddStorageLinkResponse) {}
+    rpc CleanStorageLink(CleanStorageLinkRequest) returns (CleanStorageLinkResponse) {}
+    rpc RemoveStorageLink(RemoveStorageLinkRequest) returns (RemoveStorageLinkResponse) {}
+    rpc Upload(StorageUploadRequest) returns (StorageUploadResponse) {}
+    rpc Validate(StorageValidateRequest) returns (StorageValidateResponse) {}
+    rpc RemoveBlock(StorageRemoveBlockRequest) returns (StorageRemoveBlockResponse) {}
+}
+
+message Storage {
+    string          id = 1;
+    string          name = 2;
+    StorageType     type = 3;
+    StorageNetwork  network = 4;
+
+    oneof config {
+        StorageS3Config s3 = 5;
+    }
+}
+
+message StorageLink {
+    string id = 1;
+    string storage_id = 2;
+    string node_id = 3;
+    string location_id = 4;
+    int64  limit_size = 5;
+    int64  used_size = 6;
+}
+
+enum StorageType {
+    S3 = 0;
+}
+
+enum StorageNetwork {
+    PUBLIC = 0;
+    PRIVATE = 1;
+}
+
+message StorageS3Config {
+    string endpoint = 1;
+    string access_key = 2;
+    string secret_key = 3;
+    string region = 4;
+    string bucket = 5;
+    string prefix = 6;
+    bool   path_style = 7;
+}
+
+message GetStoragesRequest {}
+
+message GetStoragesResponse {
+    repeated Storage storages = 1;
+}
+
+message AddStorageRequest {
+    Storage storage = 1;
+}
+
+message AddStorageResponse {
+    Storage storage = 1;
+}
+
+message RemoveStorageRequest {
+    string storage_id = 1;
+}
+
+message RemoveStorageResponse {}
+
+message GetStorageLinksRequest {}
+
+message GetStorageLinksResponse {
+    repeated StorageLink storage_links = 1;
+}
+
+message AddStorageLinkRequest {
+    StorageLink storage_link = 1;
+}
+
+message AddStorageLinkResponse {
+    StorageLink storage_link = 1;
+}
+
+message CleanStorageLinkRequest {
+    string storage_link_id = 1;
+}
+
+message CleanStorageLinkResponse {}
+
+message RemoveStorageLinkRequest {
+    string storage_link_id = 1;
+}
+
+message RemoveStorageLinkResponse {}
+
+message StorageValidateRequest {
+    Storage storage = 1;
+}
+
+message StorageValidateResponse {}
+
+message StorageUploadRequest {
+    FileContext   context = 1;
+    string        hash = 2;
+    BlockType     block_type = 3;
+    int64         block_index = 4;
+    int64         block_size = 5;
+    BlockSettings block_settings = 6;
+}
+
+message StorageUploadResponse {
+    string      block_id = 1;
+    StorageType type = 2;
+    string      url = 3;
+}
+
+message StorageRemoveBlockRequest {
+    Storage storage = 1;
+    string  path = 2;
+}
+
+message StorageRemoveBlockResponse {}

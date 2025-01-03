@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package pixelfs.v1;
+option  go_package = "github.com/pixelfs/pixelfs/gen/pixelfs/v1";
+
+service AuthService {
+    rpc CreateCliSession(CreateCliSessionRequest) returns (CreateCliSessionResponse) {}
+    rpc VerifyCliSession(VerifyCliSessionRequest) returns (VerifyCliSessionResponse) {}
+}
+
+message CreateCliSessionRequest {
+    string token = 1;
+}
+
+message CreateCliSessionResponse {}
+
+message VerifyCliSessionRequest {
+    string token = 1;
+}
+
+message VerifyCliSessionResponse {
+    string user_id = 1;
+    string auth_token = 2;
+}

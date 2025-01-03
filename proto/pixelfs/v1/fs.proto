@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+import "pixelfs/v1/block.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
+package pixelfs.v1;
+option  go_package = "github.com/pixelfs/pixelfs/gen/pixelfs/v1";
+
+service FileSystemService {
+    rpc List(FileListRequest) returns (FileListResponse) {}
+    rpc Stat(FileStatRequest) returns (FileStatResponse) {}
+    rpc Create(FileCreateRequest) returns (FileCreateResponse) {}
+    rpc Remove(FileRemoveRequest) returns (FileRemoveResponse) {}
+    rpc Copy(FileCopyRequest) returns (FileCopyResponse) {}
+    rpc Move(FileMoveRequest) returns (FileMoveResponse) {}
+    rpc Mkdir(FileMkdirRequest) returns (FileMkdirResponse) {}
+    rpc Read(FileReadRequest) returns (FileReadResponse) {}
+    rpc Write(FileWriteRequest) returns (FileWriteResponse) {}
+    rpc M3U8(FileM3U8Request) returns (FileM3U8Response) {}
+}
+
+enum FileType {
+    UNKNOWN     = 0;
+    NODE        = 1;
+    LOCATION    = 2;
+    DIR         = 3;
+    IMAGE       = 4;
+    VIDEO       = 5;
+    AUDIO       = 6;
+    DOCUMENT    = 7;
+}
+
+message File {
+    string   name     = 1;
+    FileType type     = 2;
+    int64    size     = 3;
+    uint32   perm     = 4;
+    string   hash     = 5;
+    string   user     = 6;
+    double   duration = 7;
+
+    reserved 8 to 18;
+    google.protobuf.Timestamp modified_at = 19;
+    map<string, google.protobuf.Any> extensions = 20;
+}
+
+message FileContext {
+    string node_id = 1;
+    string location = 2;
+    string path = 3;
+}
+
+message FileListRequest {
+    FileContext context = 1;
+}
+
+message FileListResponse {
+    repeated File files = 1;
+}
+
+message FileStatRequest {
+    FileContext context = 1;
+    bool        hash = 2;
+    bool        duration = 3;
+}
+
+message FileStatResponse {
+    File file = 1;
+}
+
+message FileCreateRequest {
+    FileContext context = 1;
+}
+
+message FileCreateResponse {}
+
+message FileRemoveRequest {
+    FileContext context = 1;
+    bool        recursive = 2;
+}
+
+message FileRemoveResponse {}
+
+message FileCopyRequest {
+    FileContext src = 1;
+    FileContext dest = 2;
+}
+
+message FileCopyResponse {}
+
+message FileMoveRequest {
+    FileContext src = 1;
+    FileContext dest = 2;
+}
+
+message FileMoveResponse {}
+
+message FileMkdirRequest {
+    FileContext context = 1;
+}
+
+message FileMkdirResponse {}
+
+message FileReadRequest {
+    FileContext   context = 1;
+    BlockType     block_type = 2;
+    int64         block_index = 3;
+    BlockSettings block_settings = 4;
+}
+
+message FileReadResponse {
+    string      block_id = 1;
+    BlockStatus block_status = 2;
+    int64       block_size = 3;
+    string      url = 4;
+}
+
+message FileWriteRequest {
+    FileContext   context = 1;
+    string        hash = 2;
+    BlockType     block_type = 3;
+    int64         block_index = 4;
+    int64         offset = 5; // force specified offset, suitable for cross-node replication
+    string        url = 6;
+}
+
+message FileWriteResponse {}
+
+message FileM3U8Request {
+    FileContext   context = 1;
+    BlockSettings block_settings = 2;
+}
+
+message FileM3U8Response {
+    string      url = 1;
+    double      duration = 2;
+}

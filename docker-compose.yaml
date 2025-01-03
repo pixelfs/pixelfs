@@ -1,0 +1,27 @@
+services:
+  pixelfs-daemon:
+    image: pixelfs/pixelfs:stable
+    container_name: pixelfs-daemon
+    command: daemon
+    restart: unless-stopped
+    environment:
+      - PIXELFS_TOKEN=your_token
+    ports:
+      - 15233:15233
+    volumes:
+      - pixelfs-data:/data
+
+  pixelfs-webdav:
+    image: pixelfs/pixelfs:stable
+    container_name: pixelfs-webdav
+    command: webdav
+    restart: unless-stopped
+    environment:
+      - PIXELFS_TOKEN=your_token
+    ports:
+      - 5233:5233
+    volumes:
+      - pixelfs-data:/data
+
+volumes:
+  pixelfs-data:

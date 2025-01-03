@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package pixelfs.v1;
+option  go_package = "github.com/pixelfs/pixelfs/gen/pixelfs/v1";
+
+service NodeService {
+    rpc GetNodes(GetNodesRequest) returns (GetNodesResponse);
+    rpc Remove(NodeRemoveRequest) returns (NodeRemoveResponse);
+}
+
+message Node {
+    string      id = 1;
+    string      name = 2;
+    NodeStatus  status = 3;
+
+    reserved 4 to 18;
+    google.protobuf.Timestamp updatedAt = 19;
+    google.protobuf.Timestamp createdAt = 20;
+}
+
+enum NodeStatus {
+    OFFLINE = 0;
+    ONLINE  = 1;
+}
+
+message GetNodesRequest {}
+
+message GetNodesResponse {
+    repeated Node nodes = 1;
+}
+
+message NodeRemoveRequest {
+    string node_id = 1;
+}
+
+message NodeRemoveResponse {}
+
+message NodeRegisterRequest {
+    string node_id = 1;
+    string token = 2;
+    string name = 3;
+}
+
+message NodeRegisterResponse {
+    string node_id = 1;
+}

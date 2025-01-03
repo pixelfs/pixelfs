@@ -1,0 +1,35 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Run build
+        run: |
+          make build |& tee build-result
+          BUILD_STATUS="${PIPESTATUS[0]}"
+
+          OLD_HASH=$(cat build-result | grep specified: | awk -F ':' '{print $2}' | sed 's/ //g')
+          NEW_HASH=$(cat build-result | grep got: | awk -F ':' '{print $2}' | sed 's/ //g')
+
+          echo "OLD_HASH=$OLD_HASH" >> $GITHUB_OUTPUT
+          echo "NEW_HASH=$NEW_HASH" >> $GITHUB_OUTPUT
+
+          exit $BUILD_STATUS
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixelfs
+          path: result/bin/pixelfs

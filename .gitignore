@@ -1,0 +1,37 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/
+
+dist/
+daemon.yaml
+*.hujson
+*.key
+
+# Exclude Jetbrains Editors
+.idea
+ignored/
+.vscode/
+test_output/
+tmp/
+
+# Nix build output
+result
+.direnv/
+
+# MkDocs
+.cache
+/site
+
+__debug_bin

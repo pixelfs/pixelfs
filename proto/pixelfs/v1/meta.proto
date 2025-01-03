@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pixelfs.v1;
+option  go_package = "github.com/pixelfs/pixelfs/gen/pixelfs/v1";
+
+service MetaService {
+    rpc GetVersion(GetVersionRequest) returns (GetVersionResponse) {}
+}
+
+message GetVersionRequest {}
+
+message GetVersionResponse {
+    string name = 1;
+    string version = 2;
+}

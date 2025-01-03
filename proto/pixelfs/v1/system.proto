@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package pixelfs.v1;
+option  go_package = "github.com/pixelfs/pixelfs/gen/pixelfs/v1";
+
+service SystemService {
+    rpc Startup(SystemStartupRequest) returns (SystemStartupResponse) {}
+    rpc Shutdown(SystemShutdownRequest) returns (SystemShutdownResponse) {}
+}
+
+message SystemStartupRequest {
+    string token = 1;
+}
+
+message SystemStartupResponse {}
+
+message SystemShutdownRequest {
+    string token = 1;
+}
+
+message SystemShutdownResponse {}

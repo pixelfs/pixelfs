@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+import "pixelfs/v1/node.proto";
+import "google/protobuf/timestamp.proto";
+
+package pixelfs.v1;
+option  go_package = "github.com/pixelfs/pixelfs/gen/pixelfs/v1";
+
+service UserService {
+    rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse) {}
+}
+
+message GetUserInfoRequest {}
+
+message GetUserInfoResponse {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    repeated Node nodes = 4;
+
+    reserved 5 to 19;
+    google.protobuf.Timestamp createdAt = 20;
+}
+
+

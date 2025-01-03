@@ -1,0 +1,152 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+before:
+  hooks:
+    - go mod tidy -compat=1.23
+    - go mod vendor
+
+builds:
+  - id: pixelfs
+    main: ./cmd/pixelfs
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+      - freebsd
+    goarch:
+      - '386'
+      - amd64
+      - arm
+      - arm64
+      - riscv64
+    goarm:
+      - '5'
+      - '6'
+      - '7'
+    ignore:
+      - goos: darwin
+        goarch: '386'
+      - goos: darwin
+        goarch: riscv64
+      - goos: windows
+        goarch: riscv64
+      - goos: freebsd
+        goarch: arm
+        goarm: 5
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/pixelfs/pixelfs/cmd/pixelfs/cli.Version=v{{.Version}}
+
+archives:
+  - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}_{{ .Version }}"
+    files:
+      - README.md
+      - LICENSE
+    format_overrides:
+      - goos: windows
+        format: zip
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}"
+  format: tar.gz
+  files:
+    - "vendor/"
+
+brews:
+  - name: 'pixelfs'
+    repository:
+      owner: pixelfs
+      name: homebrew-tap
+      branch: master
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    goarm: "7"
+    homepage: https://github.com/pixelfs/pixelfs
+    description: A cross-device file system, Transfer files based on s3-protocol.
+    url_template: "https://github.com/pixelfs/pixelfs/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    license: GPL-3.0
+    commit_author:
+      name: "ZiHang Gao"
+      email: hello@gaozihang.com
+    service: |
+      run [opt_bin/"pixelfs", "daemon"]
+      keep_alive true
+    test: |
+      system "#{bin}/pixelfs version"
+    extra_install: |-
+      bash_completion.install "completions/bash_autocomplete" => "pixelfs"
+      zsh_completion.install "completions/zsh_autocomplete" => "_pixelfs"
+
+nfpms:
+  - builds:
+      - pixelfs
+    package_name: pixelfs
+    priority: optional
+    vendor: pixelfs
+    maintainer: ZiHang Gao <hello@gaozihang.com>
+    homepage: https://github.com/pixelfs/pixelfs
+    license: GPL-3.0
+    bindir: /usr/local/bin
+    formats:
+      - deb
+    contents:
+      - src: ./nfpms/pixelfs.systemd.service
+        dst: /usr/lib/systemd/user/pixelfs.service
+    scripts:
+      postinstall: ./nfpms/postinstall.sh
+      postremove: ./nfpms/postremove.sh
+
+kos:
+  - id: dockerhub
+    build: pixelfs
+    base_image: pixelfs/ffmpeg:7.1-ubuntu
+    repository: pixelfs/pixelfs
+    sbom: none
+    bare: true
+    platforms:
+      - linux/amd64
+    tags:
+      - "{{ if not .Prerelease }}latest{{ end }}"
+      - "{{ if not .Prerelease }}{{ .Major }}.{{ .Minor }}.{{ .Patch }}{{ end }}"
+      - "{{ if not .Prerelease }}{{ .Major }}.{{ .Minor }}{{ end }}"
+      - "{{ if not .Prerelease }}{{ .Major }}{{ end }}"
+      - "{{ if not .Prerelease }}stable{{ else }}unstable{{ end }}"
+      - '{{ trimprefix .Tag "v" }}'
+
+release:
+  prerelease: auto
+
+snapshot:
+  version_template: "{{ .Version }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^test:"
+      - "^chore"
+      - "merge conflict"
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+      - go mod tidy
+  groups:
+    - title: "New Features"
+      regexp: '^feat:'
+      order: 100
+    - title: "Bug fixes"
+      regexp: '^fix:'
+      order: 200
+    - title: "Documentation updates"
+      regexp: '^doc:'
+      order: 400
+    - title: Other work
+      order: 9999
