@@ -77,9 +77,6 @@ brews:
       keep_alive true
     test: |
       system "#{bin}/pixelfs version"
-    extra_install: |-
-      bash_completion.install "completions/bash_autocomplete" => "pixelfs"
-      zsh_completion.install "completions/zsh_autocomplete" => "_pixelfs"
 
 nfpms:
   - builds:
