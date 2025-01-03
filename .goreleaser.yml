@@ -93,6 +93,7 @@ nfpms:
     bindir: /usr/local/bin
     formats:
       - deb
+      - rpm
     contents:
       - src: ./nfpms/pixelfs.systemd.service
         dst: /usr/lib/systemd/user/pixelfs.service
