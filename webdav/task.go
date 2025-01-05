@@ -41,5 +41,5 @@ func cleanWebdavCache(cfg *config.Config) {
 	}
 
 	go task.Run(context.Background())
-	log.Info().Msg("webdav cache clean task started")
+	log.Debug().Msg("webdav cache clean task started")
 }

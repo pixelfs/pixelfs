@@ -41,5 +41,5 @@ func cleanFFmpegCache(cfg *config.Config) {
 	}
 
 	go task.Run(context.Background())
-	log.Info().Msg("ffmpeg cache clean task started")
+	log.Debug().Msg("ffmpeg cache clean task started")
 }

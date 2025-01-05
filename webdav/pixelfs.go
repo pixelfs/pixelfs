@@ -2,6 +2,7 @@ package webdav
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -31,7 +32,11 @@ type PixelFS struct {
 func NewPixelFS() (*PixelFS, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
-		log.Cli().Fatal().Err(err)
+		return nil, err
+	}
+
+	if cfg.Token == "" {
+		return nil, fmt.Errorf("token is empty")
 	}
 
 	users := make(map[string]*config.User)
