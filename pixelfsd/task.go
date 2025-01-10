@@ -15,24 +15,25 @@ func cleanFFmpegCache(cfg *config.Config) {
 	task, err := util.NewTask(
 		"clean:cache:ffmpeg",
 		func(task *util.Task) {
-			_ = filepath.Walk(cfg.FFmpeg.Cache.Path, func(path string, info os.FileInfo, err error) error {
+			dirs, err := os.ReadDir(cfg.FFmpeg.Cache.Path)
+			if err != nil {
+				return
+			}
+
+			for _, dir := range dirs {
+				info, err := dir.Info()
 				if err != nil {
-					return err
+					return
 				}
 
-				if path == cfg.FFmpeg.Cache.Path {
-					return nil
-				}
-
+				name := filepath.Join(cfg.FFmpeg.Cache.Path, dir.Name())
 				if time.Since(info.ModTime()) > time.Duration(cfg.FFmpeg.Cache.Expire)*time.Second {
-					log.Info().Str("path", path).Msg("removing file")
-					if err := os.RemoveAll(path); err != nil {
+					log.Info().Str("path", name).Msg("removing file")
+					if err := os.RemoveAll(name); err != nil {
 						log.Error().Err(err).Msg("failed to remove file")
 					}
 				}
-
-				return nil
-			})
+			}
 		},
 		1*time.Hour,
 	)

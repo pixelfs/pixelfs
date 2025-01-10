@@ -15,24 +15,25 @@ func cleanWebdavCache(cfg *config.Config) {
 	task, err := util.NewTask(
 		"clean:cache:webdav",
 		func(task *util.Task) {
-			_ = filepath.Walk(cfg.Webdav.Cache.Path, func(path string, info os.FileInfo, err error) error {
+			dirs, err := os.ReadDir(cfg.Webdav.Cache.Path)
+			if err != nil {
+				return
+			}
+
+			for _, dir := range dirs {
+				info, err := dir.Info()
 				if err != nil {
-					return err
+					return
 				}
 
-				if path == cfg.Webdav.Cache.Path {
-					return nil
-				}
-
+				name := filepath.Join(cfg.Webdav.Cache.Path, dir.Name())
 				if time.Since(info.ModTime()) > time.Duration(cfg.Webdav.Cache.Expire)*time.Second {
-					log.Info().Str("path", path).Msg("removing file")
-					if err := os.RemoveAll(path); err != nil {
+					log.Info().Str("path", name).Msg("removing file")
+					if err := os.RemoveAll(name); err != nil {
 						log.Error().Err(err).Msg("failed to remove file")
 					}
 				}
-
-				return nil
-			})
+			}
 		},
 		1*time.Hour,
 	)

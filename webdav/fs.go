@@ -149,6 +149,10 @@ func (fs *fileSystem) stat(name string) (*pb.File, error) {
 func (fs *fileSystem) parseNameToContext(name string) *pb.FileContext {
 	var nodeId, location, path string
 
+	if fs.cfg.Webdav.Prefix != "" {
+		name = strings.TrimPrefix(name, fs.cfg.Webdav.Prefix)
+	}
+
 	parts := strings.Split(strings.Trim(name, "/"), "/")
 	if len(parts) == 0 {
 		return nil
