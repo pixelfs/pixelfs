@@ -15,6 +15,10 @@ import (
 )
 
 func (p *PixelFS) AuthLogin() error {
+	if p.cfg.Token != "" {
+		log.Cli().Fatal().Msg("already authenticated")
+	}
+
 	token, err := util.GenerateAuthToken()
 	if err != nil {
 		return err

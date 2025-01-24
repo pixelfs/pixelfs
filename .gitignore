@@ -30,8 +30,9 @@ tmp/
 result
 .direnv/
 
-# MkDocs
-.cache
-/site
+# Docs
+/docs/node_modules
+/docs/.vitepress/dist
+/docs/.vitepress/cache
 
 __debug_bin

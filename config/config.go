@@ -23,18 +23,22 @@ type Daemon struct {
 	Listen string `toml:"listen"`
 }
 
-type Log struct {
-	Level string `toml:"level"`
+type FFmpeg struct {
+	Cache   Cache          `toml:"cache"`
+	Options map[string]any `toml:"options"`
+}
+
+type Webdav struct {
+	Listen string `toml:"listen"`
+	Prefix string `toml:"prefix"`
+	Cache  Cache  `toml:"cache"`
+	CORS   CORS   `toml:"cors"`
+	Users  []User `toml:"users"`
 }
 
 type Cache struct {
 	Path   string `toml:"path"`
 	Expire int    `toml:"expire"`
-}
-
-type FFmpeg struct {
-	Cache   Cache          `toml:"cache"`
-	Options map[string]any `toml:"options"`
 }
 
 type CORS struct {
@@ -44,14 +48,6 @@ type CORS struct {
 	AllowMethods  []string `toml:"allow_methods"`
 	ExposeHeaders []string `toml:"expose_headers"`
 	MaxAge        int      `toml:"max_age"`
-}
-
-type Webdav struct {
-	Listen string `toml:"listen"`
-	Prefix string `toml:"prefix"`
-	Cache  Cache  `toml:"cache"`
-	CORS   CORS   `toml:"cors"`
-	Users  []User `toml:"users"`
 }
 
 func LoadConfig(path string, isFile bool) error {
