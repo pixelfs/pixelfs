@@ -1,6 +1,6 @@
 # Introduction
 
-`PixelFS` is a powerful and flexible cross-device file management system designed to provide users with a seamless file management experience. By leveraging the `S3` protocol, `PixelFS` enables fast and secure file transfers across multiple devices. It supports a wide range of operations, including copy, move, upload, and download, making it ideal for both personal and enterprise use.
+`PixelFS` is a powerful and flexible cross-device file management system designed to provide users with a seamless file management experience. By leveraging the `S3` protocol, `PixelFS` enables fast and secure file transfers across multiple devices. It supports a wide range of operations, including copy, move, upload, and download.
 
 In addition, `PixelFS` offers full support for the `WebDAV` protocol, allowing users to access and manage their files directly through familiar `WebDAV` clients. Under the hood, `PixelFS` consistently relies on the `S3` protocol for efficient and reliable data transfers, ensuring compatibility and performance.
 
