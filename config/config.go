@@ -69,7 +69,7 @@ func LoadConfig(path string, isFile bool) error {
 
 	viper.SetConfigType("toml")
 
-	viper.SetDefault("endpoint", "https://pixelfs.io")
+	viper.SetDefault("endpoint", "https://www.pixelfs.io")
 	viper.SetDefault("daemon.listen", "0.0.0.0:15233")
 
 	// ffmpeg

@@ -72,7 +72,7 @@ After running the command, the terminal will output a login URL, for example:
 ```text
 To authenticate, Please visit:
 
-    https://pixelfs.io/auth/cli/d9e5ccb055924bc4d0801a56524766d52f0c26397e9f431abb19ada6be9c16df
+    https://www.pixelfs.io/auth/cli/d9e5ccb055924bc4d0801a56524766d52f0c26397e9f431abb19ada6be9c16df
 
 Waiting for session...
 ```
