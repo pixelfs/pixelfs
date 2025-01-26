@@ -5,17 +5,10 @@ import (
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"github.com/lesismal/arpc"
-	arpccodec "github.com/lesismal/arpc/codec"
-	arpcgzip "github.com/lesismal/arpc/extension/middleware/coder/gzip"
-	"github.com/lesismal/arpc/extension/middleware/router"
-	arpclog "github.com/lesismal/arpc/log"
 	"github.com/pixelfs/pixelfs/config"
 	"github.com/pixelfs/pixelfs/log"
 	"github.com/pixelfs/pixelfs/pixelfsd/grpc"
 	"github.com/pixelfs/pixelfs/pixelfsd/ws"
-	"github.com/pixelfs/pixelfs/pixelfsd/ws/codec"
-	"github.com/pixelfs/pixelfs/pixelfsd/ws/middleware"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
@@ -43,21 +36,6 @@ func (p *PixelFSD) Serve() error {
 
 	// gRPC
 	grpc.NewGrpcV1APIService(engine).Register()
-
-	// aRPC
-	handler := arpc.DefaultHandler
-	handler.UseCoder(arpcgzip.New(1024))
-	handler.Use(router.Recover())
-	handler.Use(middleware.Logger())
-
-	// Logger
-	handler.SetLogTag("pixelfs rpc")
-	arpclog.SetLogger(&log.ArpcLogger{})
-	arpccodec.SetCodec(&codec.GRPCCodec{})
-
-	if err := ws.InitRouters(p.cfg, handler); err != nil {
-		return err
-	}
 
 	log.Info().Str("listen", p.cfg.Daemon.Listen).Msg("pixelfs daemon is running")
 

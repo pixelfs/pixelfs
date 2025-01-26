@@ -10,12 +10,18 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/lesismal/arpc"
+	arpccodec "github.com/lesismal/arpc/codec"
+	arpcgzip "github.com/lesismal/arpc/extension/middleware/coder/gzip"
+	"github.com/lesismal/arpc/extension/middleware/router"
 	"github.com/lesismal/arpc/extension/protocol/websocket"
+	arpclog "github.com/lesismal/arpc/log"
 	"github.com/pixelfs/pixelfs/config"
 	pb "github.com/pixelfs/pixelfs/gen/pixelfs/v1"
 	"github.com/pixelfs/pixelfs/log"
 	"github.com/pixelfs/pixelfs/pixelfsd/ws/api"
 	"github.com/pixelfs/pixelfs/pixelfsd/ws/api/fs"
+	"github.com/pixelfs/pixelfs/pixelfsd/ws/codec"
+	"github.com/pixelfs/pixelfs/pixelfsd/ws/middleware"
 	"github.com/pixelfs/pixelfs/rpc/core"
 	"github.com/pixelfs/pixelfs/util"
 )
@@ -25,20 +31,6 @@ const CallTimeout = 2 * time.Minute
 var (
 	Client *arpc.Client
 )
-
-func InitRouters(cfg *config.Config, router arpc.Handler) error {
-	router.Handle("/location/check", api.LocationCheck)
-	router.Handle("/storage/validate", api.StorageValidate)
-	router.Handle("/storage/remove-block", api.StorageRemoveBlock)
-
-	// File System
-	err := fs.InitRouters(cfg, router)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func StartClient(cfg *config.Config) error {
 	userInfo, err := core.NewGrpcV1Client(cfg).UserService.GetUserInfo(
@@ -55,7 +47,22 @@ func StartClient(cfg *config.Config) error {
 		return err
 	}
 
-	arpc.DefaultHandler.HandleConnected(func(c *arpc.Client) {
+	// aRPC
+	handler := arpc.DefaultHandler
+	handler.UseCoder(arpcgzip.New(1024))
+	handler.Use(router.Recover())
+	handler.Use(middleware.Logger())
+
+	// Logger
+	handler.SetLogTag("pixelfs rpc")
+	arpclog.SetLogger(&log.ArpcLogger{})
+	arpccodec.SetCodec(&codec.GRPCCodec{})
+
+	if err = initRouters(cfg, handler); err != nil {
+		return err
+	}
+
+	handler.HandleConnected(func(c *arpc.Client) {
 		hostname, err := os.Hostname()
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to get hostname")
@@ -116,6 +123,20 @@ func StopClient() {
 	Client.Stop()
 	Client = nil
 	return
+}
+
+func initRouters(cfg *config.Config, router arpc.Handler) error {
+	router.Handle("/location/check", api.LocationCheck)
+	router.Handle("/storage/validate", api.StorageValidate)
+	router.Handle("/storage/remove-block", api.StorageRemoveBlock)
+
+	// File System
+	err := fs.InitRouters(cfg, router)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func httpToWebSocket(url string) (string, error) {
