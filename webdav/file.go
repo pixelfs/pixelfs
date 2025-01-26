@@ -200,7 +200,11 @@ func (f *file) read(length, blockStart, blockEnd, blockIndex, blockSize int64) (
 						BlockIndex: blockIndex,
 					}),
 				)
-				if err == nil && read.Msg.BlockStatus != pb.BlockStatus_PENDING {
+				if err != nil {
+					return nil, err
+				}
+
+				if read.Msg.BlockStatus != pb.BlockStatus_PENDING {
 					break
 				}
 				time.Sleep(5 * time.Second)

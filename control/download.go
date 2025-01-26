@@ -123,9 +123,16 @@ func (p *PixelFS) Download(ctx *pb.FileContext, output string, thread int) error
 							BlockIndex: index,
 						}),
 					)
-					if err == nil && read.Msg.BlockStatus != pb.BlockStatus_PENDING {
+
+					if err != nil {
+						resultCh <- blockResult{index: index, err: fmt.Errorf("failed to read block %d: %w", index, err)}
+						return
+					}
+
+					if read.Msg.BlockStatus != pb.BlockStatus_PENDING {
 						break
 					}
+
 					time.Sleep(5 * time.Second)
 				}
 
