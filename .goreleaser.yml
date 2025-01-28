@@ -75,6 +75,7 @@ brews:
     service: |
       run [opt_bin/"pixelfs", "daemon"]
       keep_alive true
+      environment_variables PATH: std_service_path_env
     test: |
       system "#{bin}/pixelfs version"
 
