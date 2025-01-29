@@ -20,4 +20,6 @@
 
 ## Documentation
 
+[Quick Start](https://docs.pixelfs.io/quick-start.html) | [Configuration](https://docs.pixelfs.io/configuration.html) | [WebDAV](https://docs.pixelfs.io/webdav.html)
+
 The full documentation is available at https://docs.pixelfs.io.
