@@ -13,8 +13,11 @@ wget https://github.com/pixelfs/pixelfs/releases/download/v1.0.0/pixelfs_1.0.0_l
 sudo dpkg -i pixelfs_1.0.0_linux_amd64.deb
 
 # Start the PixelFS service (run in user mode)
-systemctl --user enable pixelfs
 systemctl --user start pixelfs
+systemctl --user enable pixelfs
+
+# Enable lingering session so that the user's services remain running even after the user logs out
+loginctl enable-linger
 ```
 :::
 
@@ -27,8 +30,11 @@ wget https://github.com/pixelfs/pixelfs/releases/download/v1.0.0/pixelfs_1.0.0_l
 sudo rpm -i pixelfs_1.0.0_linux_amd64.rpm
 
 # Start the PixelFS service (run in user mode)
-systemctl --user enable pixelfs
 systemctl --user start pixelfs
+systemctl --user enable pixelfs
+
+# Enable lingering session so that the user's services remain running even after the user logs out
+loginctl enable-linger
 ```
 :::
 

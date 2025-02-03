@@ -13,8 +13,11 @@ wget https://github.com/pixelfs/pixelfs/releases/download/v1.0.0/pixelfs_1.0.0_l
 sudo dpkg -i pixelfs_1.0.0_linux_amd64.deb
 
 # 启动 PixelFS 服务 (以用户模式运行)
-systemctl --user enable pixelfs
 systemctl --user start pixelfs
+systemctl --user enable pixelfs
+
+# 启用长时间会话，使得即使用户退出登录后，用户的服务仍然保持运行
+loginctl enable-linger
 ```
 :::
 
@@ -27,8 +30,11 @@ wget https://github.com/pixelfs/pixelfs/releases/download/v1.0.0/pixelfs_1.0.0_l
 sudo rpm -i pixelfs_1.0.0_linux_amd64.rpm
 
 # 启动 PixelFS 服务 (以用户模式运行)
-systemctl --user enable pixelfs
 systemctl --user start pixelfs
+systemctl --user enable pixelfs
+
+# 启用长时间会话，使得即使用户退出登录后，用户的服务仍然保持运行
+loginctl enable-linger
 ```
 :::
 
