@@ -131,7 +131,7 @@ changelog:
   filters:
     exclude:
       - "^test:"
-      - "^chore"
+      - "^chore:"
       - "merge conflict"
       - Merge pull request
       - Merge remote-tracking branch
@@ -145,7 +145,7 @@ changelog:
       regexp: '^fix:'
       order: 200
     - title: "Documentation updates"
-      regexp: '^doc:'
+      regexp: '^docs:'
       order: 400
     - title: Other work
       order: 9999
