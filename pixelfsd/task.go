@@ -11,7 +11,7 @@ import (
 	"github.com/pixelfs/pixelfs/util"
 )
 
-func cleanFFmpegCache(cfg *config.Config) {
+func CleanFFmpegCache(cfg *config.Config) {
 	task, err := util.NewTask(
 		"clean:cache:ffmpeg",
 		func(task *util.Task) {

@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -26,10 +27,9 @@ import (
 	"github.com/pixelfs/pixelfs/util"
 )
 
-const CallTimeout = 2 * time.Minute
-
 var (
-	Client *arpc.Client
+	Client        *arpc.Client
+	isInitRouters bool
 )
 
 func StartClient(cfg *config.Config) error {
@@ -75,43 +75,25 @@ func StartClient(cfg *config.Config) error {
 			Name:   hostname,
 		}
 
-		if err = c.Call("/node/register", &request, &response, CallTimeout); err != nil {
+		if err = c.Call("/node/register", &request, &response, 5*time.Second); err != nil {
 			log.Fatal().Err(err).Msg("failed to call /node/register")
 		}
 	})
 
-	wsEndpoint, err := httpToWebSocket(cfg.Endpoint)
-	if err != nil {
+	// New websocket client
+	if err = newClient(cfg, nodeId, token); err != nil {
 		return err
 	}
 
-	client, err := arpc.NewClient(func() (net.Conn, error) {
-		return websocket.Dial(wsEndpoint+"/ws?id="+nodeId+"&t="+token, nil)
-	})
-	if err != nil {
+	if err = ping(cfg, nodeId, token); err != nil {
 		return err
 	}
-
-	task, err := util.NewTask("ws:ping", func(task *util.Task) {
-		if err = client.Call("/ping", nil, nil, 15*time.Second); err != nil {
-			log.Error().Err(err).Msg("pixelfs rpc ping failed and restarting client")
-			_ = client.Restart()
-			return
-		}
-	}, 30*time.Second)
-
-	if err != nil {
-		return fmt.Errorf("failed to create ping task: %w", err)
-	}
-
-	go task.Run(context.Background())
 
 	log.Info().
 		Str("nodeId", nodeId).
 		Str("userId", userInfo.Msg.Id).
 		Msg("pixelfs rpc client is initialized and ready")
 
-	Client = client
 	return nil
 }
 
@@ -125,7 +107,66 @@ func StopClient() {
 	return
 }
 
+func newClient(cfg *config.Config, nodeId string, token string) error {
+	if Client != nil {
+		Client.Stop()
+		Client = nil
+	}
+
+	wsEndpoint, err := httpToWebSocket(cfg.Endpoint)
+	if err != nil {
+		return err
+	}
+
+	client, err := arpc.NewClient(func() (net.Conn, error) {
+		return websocket.Dial(wsEndpoint+"/ws?id="+nodeId+"&t="+token, nil)
+	})
+	if err != nil {
+		return err
+	}
+
+	Client = client
+	return nil
+}
+
+func ping(cfg *config.Config, nodeId string, token string) error {
+	task, err := util.NewTask("ws:ping", func(task *util.Task) {
+		if Client == nil {
+			if err := newClient(cfg, nodeId, token); err != nil {
+				log.Error().Err(err).Msg("failed to start pixelfs rpc client")
+			}
+
+			return
+		}
+
+		if err := Client.Call("/ping", nil, nil, 5*time.Second); err != nil {
+			log.Error().Err(err).Msg("pixelfs rpc ping failed and restarting client")
+
+			if errors.Is(err, arpc.ErrClientReconnecting) {
+				return
+			}
+
+			if err = newClient(cfg, nodeId, token); err != nil {
+				log.Error().Err(err).Msg("failed to restart pixelfs rpc client")
+			}
+
+			return
+		}
+	}, 30*time.Second)
+
+	if err != nil {
+		return fmt.Errorf("failed to create ping task: %w", err)
+	}
+
+	go task.Run(context.Background())
+	return nil
+}
+
 func initRouters(cfg *config.Config, router arpc.Handler) error {
+	if isInitRouters {
+		return nil
+	}
+
 	router.Handle("/location/check", api.LocationCheck)
 	router.Handle("/storage/validate", api.StorageValidate)
 	router.Handle("/storage/remove-block", api.StorageRemoveBlock)
@@ -136,6 +177,7 @@ func initRouters(cfg *config.Config, router arpc.Handler) error {
 		return err
 	}
 
+	isInitRouters = true
 	return nil
 }
 

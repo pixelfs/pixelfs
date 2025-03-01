@@ -48,7 +48,7 @@ func (p *PixelFSD) Serve() error {
 	}
 
 	// Clean FFmpeg cache task
-	cleanFFmpegCache(p.cfg)
+	CleanFFmpegCache(p.cfg)
 
 	return http.ListenAndServe(
 		p.cfg.Daemon.Listen,
