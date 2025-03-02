@@ -29,7 +29,7 @@ import (
 
 var (
 	Client        *arpc.Client
-	isInitRouters bool
+	isInitHandler bool
 )
 
 func StartClient(cfg *config.Config) error {
@@ -47,44 +47,17 @@ func StartClient(cfg *config.Config) error {
 		return err
 	}
 
-	// aRPC
-	handler := arpc.DefaultHandler
-	handler.UseCoder(arpcgzip.New(1024))
-	handler.Use(router.Recover())
-	handler.Use(middleware.Logger())
-
-	// Logger
-	handler.SetLogTag("pixelfs rpc")
-	arpclog.SetLogger(&log.ArpcLogger{})
-	arpccodec.SetCodec(&codec.GRPCCodec{})
-
-	if err = initRouters(cfg, handler); err != nil {
+	// Init handler
+	if err = initHandler(cfg, nodeId, token); err != nil {
 		return err
 	}
-
-	handler.HandleConnected(func(c *arpc.Client) {
-		hostname, err := os.Hostname()
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed to get hostname")
-		}
-
-		var response pb.NodeRegisterResponse
-		request := pb.NodeRegisterRequest{
-			NodeId: nodeId,
-			Token:  token,
-			Name:   hostname,
-		}
-
-		if err = c.Call("/node/register", &request, &response, 5*time.Second); err != nil {
-			log.Fatal().Err(err).Msg("failed to call /node/register")
-		}
-	})
 
 	// New websocket client
 	if err = newClient(cfg, nodeId, token); err != nil {
 		return err
 	}
 
+	// Ping
 	if err = ping(cfg, nodeId, token); err != nil {
 		return err
 	}
@@ -162,22 +135,51 @@ func ping(cfg *config.Config, nodeId string, token string) error {
 	return nil
 }
 
-func initRouters(cfg *config.Config, router arpc.Handler) error {
-	if isInitRouters {
+func initHandler(cfg *config.Config, nodeId string, token string) error {
+	if isInitHandler {
 		return nil
 	}
 
-	router.Handle("/location/check", api.LocationCheck)
-	router.Handle("/storage/validate", api.StorageValidate)
-	router.Handle("/storage/remove-block", api.StorageRemoveBlock)
+	// aRPC
+	handler := arpc.DefaultHandler
+	handler.UseCoder(arpcgzip.New(1024))
+	handler.Use(router.Recover())
+	handler.Use(middleware.Logger())
+
+	// Logger
+	handler.SetLogTag("pixelfs rpc")
+	arpclog.SetLogger(&log.ArpcLogger{})
+	arpccodec.SetCodec(&codec.GRPCCodec{})
+
+	handler.HandleConnected(func(c *arpc.Client) {
+		hostname, err := os.Hostname()
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to get hostname")
+		}
+
+		var response pb.NodeRegisterResponse
+		request := pb.NodeRegisterRequest{
+			NodeId: nodeId,
+			Token:  token,
+			Name:   hostname,
+		}
+
+		if err = c.Call("/node/register", &request, &response, 5*time.Second); err != nil {
+			log.Fatal().Err(err).Msg("failed to call /node/register")
+		}
+	})
+
+	handler.Handle("/location/check", api.LocationCheck)
+	handler.Handle("/storage/validate", api.StorageValidate)
+	handler.Handle("/storage/remove-block", api.StorageRemoveBlock)
 
 	// File System
-	err := fs.InitRouters(cfg, router)
+	err := fs.InitRouters(cfg, handler)
 	if err != nil {
 		return err
 	}
 
-	isInitRouters = true
+	isInitHandler = true
 	return nil
 }
 
