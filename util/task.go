@@ -26,29 +26,28 @@ type Task struct {
 }
 
 func NewTask(taskId string, cb func(task *Task), interval time.Duration) (*Task, error) {
-	manager.mu.Lock()
-	defer manager.mu.Unlock()
-
 	_, exists := manager.registry[taskId]
 	if exists {
 		manager.registry[taskId].Stop()
 	}
 
+	manager.mu.Lock()
+	defer manager.mu.Unlock()
 	task := &Task{Id: taskId, callback: cb, interval: interval}
 	manager.registry[taskId] = task
 	return task, nil
 }
 
 func StopTask(taskId string) error {
-	manager.mu.Lock()
-	defer manager.mu.Unlock()
-
 	task, exists := manager.registry[taskId]
 	if !exists {
 		return errors.New("task not found")
 	}
 
 	task.Stop()
+
+	manager.mu.Lock()
+	defer manager.mu.Unlock()
 	delete(manager.registry, taskId)
 	return nil
 }
@@ -98,12 +97,11 @@ func (t *Task) do() {
 }
 
 func (t *Task) Stop() {
-	manager.mu.Lock()
-	defer manager.mu.Unlock()
-
 	if t.stop != nil {
 		t.stop()
 
+		manager.mu.Lock()
+		defer manager.mu.Unlock()
 		if _, exists := manager.registry[t.Id]; exists {
 			delete(manager.registry, t.Id)
 		}
