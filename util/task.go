@@ -2,7 +2,6 @@ package util
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -41,7 +40,7 @@ func NewTask(taskId string, cb func(task *Task), interval time.Duration) (*Task,
 func StopTask(taskId string) error {
 	task, exists := manager.registry[taskId]
 	if !exists {
-		return errors.New("task not found")
+		return nil
 	}
 
 	task.Stop()

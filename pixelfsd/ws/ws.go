@@ -21,6 +21,7 @@ import (
 	"github.com/pixelfs/pixelfs/log"
 	"github.com/pixelfs/pixelfs/pixelfsd/ws/api"
 	"github.com/pixelfs/pixelfs/pixelfsd/ws/api/fs"
+	"github.com/pixelfs/pixelfs/pixelfsd/ws/api/sync"
 	"github.com/pixelfs/pixelfs/pixelfsd/ws/codec"
 	"github.com/pixelfs/pixelfs/pixelfsd/ws/middleware"
 	"github.com/pixelfs/pixelfs/rpc/core"
@@ -167,6 +168,10 @@ func initHandler(cfg *config.Config, nodeId string, token string) error {
 		if err = c.Call("/node/register", &request, &response, 5*time.Second); err != nil {
 			log.Fatal().Err(err).Msg("failed to call /node/register")
 		}
+
+		if err = sync.InitFileSync(cfg); err != nil {
+			log.Error().Err(err).Msg("failed to init file sync")
+		}
 	})
 
 	handler.Handle("/location/check", api.LocationCheck)
@@ -174,8 +179,10 @@ func initHandler(cfg *config.Config, nodeId string, token string) error {
 	handler.Handle("/storage/remove-block", api.StorageRemoveBlock)
 
 	// File System
-	err := fs.InitRouters(cfg, handler)
-	if err != nil {
+	if err := fs.InitHandler(cfg, handler); err != nil {
+		return err
+	}
+	if err := sync.InitHandler(cfg, handler); err != nil {
 		return err
 	}
 

@@ -55,21 +55,28 @@ const (
 	FileSystemServiceWriteProcedure = "/pixelfs.v1.FileSystemService/Write"
 	// FileSystemServiceM3U8Procedure is the fully-qualified name of the FileSystemService's M3U8 RPC.
 	FileSystemServiceM3U8Procedure = "/pixelfs.v1.FileSystemService/M3U8"
+	// FileSystemServiceChmodProcedure is the fully-qualified name of the FileSystemService's Chmod RPC.
+	FileSystemServiceChmodProcedure = "/pixelfs.v1.FileSystemService/Chmod"
+	// FileSystemServiceChtimesProcedure is the fully-qualified name of the FileSystemService's Chtimes
+	// RPC.
+	FileSystemServiceChtimesProcedure = "/pixelfs.v1.FileSystemService/Chtimes"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	fileSystemServiceServiceDescriptor      = v1.File_pixelfs_v1_fs_proto.Services().ByName("FileSystemService")
-	fileSystemServiceListMethodDescriptor   = fileSystemServiceServiceDescriptor.Methods().ByName("List")
-	fileSystemServiceStatMethodDescriptor   = fileSystemServiceServiceDescriptor.Methods().ByName("Stat")
-	fileSystemServiceCreateMethodDescriptor = fileSystemServiceServiceDescriptor.Methods().ByName("Create")
-	fileSystemServiceRemoveMethodDescriptor = fileSystemServiceServiceDescriptor.Methods().ByName("Remove")
-	fileSystemServiceCopyMethodDescriptor   = fileSystemServiceServiceDescriptor.Methods().ByName("Copy")
-	fileSystemServiceMoveMethodDescriptor   = fileSystemServiceServiceDescriptor.Methods().ByName("Move")
-	fileSystemServiceMkdirMethodDescriptor  = fileSystemServiceServiceDescriptor.Methods().ByName("Mkdir")
-	fileSystemServiceReadMethodDescriptor   = fileSystemServiceServiceDescriptor.Methods().ByName("Read")
-	fileSystemServiceWriteMethodDescriptor  = fileSystemServiceServiceDescriptor.Methods().ByName("Write")
-	fileSystemServiceM3U8MethodDescriptor   = fileSystemServiceServiceDescriptor.Methods().ByName("M3U8")
+	fileSystemServiceServiceDescriptor       = v1.File_pixelfs_v1_fs_proto.Services().ByName("FileSystemService")
+	fileSystemServiceListMethodDescriptor    = fileSystemServiceServiceDescriptor.Methods().ByName("List")
+	fileSystemServiceStatMethodDescriptor    = fileSystemServiceServiceDescriptor.Methods().ByName("Stat")
+	fileSystemServiceCreateMethodDescriptor  = fileSystemServiceServiceDescriptor.Methods().ByName("Create")
+	fileSystemServiceRemoveMethodDescriptor  = fileSystemServiceServiceDescriptor.Methods().ByName("Remove")
+	fileSystemServiceCopyMethodDescriptor    = fileSystemServiceServiceDescriptor.Methods().ByName("Copy")
+	fileSystemServiceMoveMethodDescriptor    = fileSystemServiceServiceDescriptor.Methods().ByName("Move")
+	fileSystemServiceMkdirMethodDescriptor   = fileSystemServiceServiceDescriptor.Methods().ByName("Mkdir")
+	fileSystemServiceReadMethodDescriptor    = fileSystemServiceServiceDescriptor.Methods().ByName("Read")
+	fileSystemServiceWriteMethodDescriptor   = fileSystemServiceServiceDescriptor.Methods().ByName("Write")
+	fileSystemServiceM3U8MethodDescriptor    = fileSystemServiceServiceDescriptor.Methods().ByName("M3U8")
+	fileSystemServiceChmodMethodDescriptor   = fileSystemServiceServiceDescriptor.Methods().ByName("Chmod")
+	fileSystemServiceChtimesMethodDescriptor = fileSystemServiceServiceDescriptor.Methods().ByName("Chtimes")
 )
 
 // FileSystemServiceClient is a client for the pixelfs.v1.FileSystemService service.
@@ -84,6 +91,8 @@ type FileSystemServiceClient interface {
 	Read(context.Context, *connect.Request[v1.FileReadRequest]) (*connect.Response[v1.FileReadResponse], error)
 	Write(context.Context, *connect.Request[v1.FileWriteRequest]) (*connect.Response[v1.FileWriteResponse], error)
 	M3U8(context.Context, *connect.Request[v1.FileM3U8Request]) (*connect.Response[v1.FileM3U8Response], error)
+	Chmod(context.Context, *connect.Request[v1.FileChmodRequest]) (*connect.Response[v1.FileChmodResponse], error)
+	Chtimes(context.Context, *connect.Request[v1.FileChtimesRequest]) (*connect.Response[v1.FileChtimesResponse], error)
 }
 
 // NewFileSystemServiceClient constructs a client for the pixelfs.v1.FileSystemService service. By
@@ -156,21 +165,35 @@ func NewFileSystemServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(fileSystemServiceM3U8MethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		chmod: connect.NewClient[v1.FileChmodRequest, v1.FileChmodResponse](
+			httpClient,
+			baseURL+FileSystemServiceChmodProcedure,
+			connect.WithSchema(fileSystemServiceChmodMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		chtimes: connect.NewClient[v1.FileChtimesRequest, v1.FileChtimesResponse](
+			httpClient,
+			baseURL+FileSystemServiceChtimesProcedure,
+			connect.WithSchema(fileSystemServiceChtimesMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // fileSystemServiceClient implements FileSystemServiceClient.
 type fileSystemServiceClient struct {
-	list   *connect.Client[v1.FileListRequest, v1.FileListResponse]
-	stat   *connect.Client[v1.FileStatRequest, v1.FileStatResponse]
-	create *connect.Client[v1.FileCreateRequest, v1.FileCreateResponse]
-	remove *connect.Client[v1.FileRemoveRequest, v1.FileRemoveResponse]
-	copy   *connect.Client[v1.FileCopyRequest, v1.FileCopyResponse]
-	move   *connect.Client[v1.FileMoveRequest, v1.FileMoveResponse]
-	mkdir  *connect.Client[v1.FileMkdirRequest, v1.FileMkdirResponse]
-	read   *connect.Client[v1.FileReadRequest, v1.FileReadResponse]
-	write  *connect.Client[v1.FileWriteRequest, v1.FileWriteResponse]
-	m3U8   *connect.Client[v1.FileM3U8Request, v1.FileM3U8Response]
+	list    *connect.Client[v1.FileListRequest, v1.FileListResponse]
+	stat    *connect.Client[v1.FileStatRequest, v1.FileStatResponse]
+	create  *connect.Client[v1.FileCreateRequest, v1.FileCreateResponse]
+	remove  *connect.Client[v1.FileRemoveRequest, v1.FileRemoveResponse]
+	copy    *connect.Client[v1.FileCopyRequest, v1.FileCopyResponse]
+	move    *connect.Client[v1.FileMoveRequest, v1.FileMoveResponse]
+	mkdir   *connect.Client[v1.FileMkdirRequest, v1.FileMkdirResponse]
+	read    *connect.Client[v1.FileReadRequest, v1.FileReadResponse]
+	write   *connect.Client[v1.FileWriteRequest, v1.FileWriteResponse]
+	m3U8    *connect.Client[v1.FileM3U8Request, v1.FileM3U8Response]
+	chmod   *connect.Client[v1.FileChmodRequest, v1.FileChmodResponse]
+	chtimes *connect.Client[v1.FileChtimesRequest, v1.FileChtimesResponse]
 }
 
 // List calls pixelfs.v1.FileSystemService.List.
@@ -223,6 +246,16 @@ func (c *fileSystemServiceClient) M3U8(ctx context.Context, req *connect.Request
 	return c.m3U8.CallUnary(ctx, req)
 }
 
+// Chmod calls pixelfs.v1.FileSystemService.Chmod.
+func (c *fileSystemServiceClient) Chmod(ctx context.Context, req *connect.Request[v1.FileChmodRequest]) (*connect.Response[v1.FileChmodResponse], error) {
+	return c.chmod.CallUnary(ctx, req)
+}
+
+// Chtimes calls pixelfs.v1.FileSystemService.Chtimes.
+func (c *fileSystemServiceClient) Chtimes(ctx context.Context, req *connect.Request[v1.FileChtimesRequest]) (*connect.Response[v1.FileChtimesResponse], error) {
+	return c.chtimes.CallUnary(ctx, req)
+}
+
 // FileSystemServiceHandler is an implementation of the pixelfs.v1.FileSystemService service.
 type FileSystemServiceHandler interface {
 	List(context.Context, *connect.Request[v1.FileListRequest]) (*connect.Response[v1.FileListResponse], error)
@@ -235,6 +268,8 @@ type FileSystemServiceHandler interface {
 	Read(context.Context, *connect.Request[v1.FileReadRequest]) (*connect.Response[v1.FileReadResponse], error)
 	Write(context.Context, *connect.Request[v1.FileWriteRequest]) (*connect.Response[v1.FileWriteResponse], error)
 	M3U8(context.Context, *connect.Request[v1.FileM3U8Request]) (*connect.Response[v1.FileM3U8Response], error)
+	Chmod(context.Context, *connect.Request[v1.FileChmodRequest]) (*connect.Response[v1.FileChmodResponse], error)
+	Chtimes(context.Context, *connect.Request[v1.FileChtimesRequest]) (*connect.Response[v1.FileChtimesResponse], error)
 }
 
 // NewFileSystemServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -303,6 +338,18 @@ func NewFileSystemServiceHandler(svc FileSystemServiceHandler, opts ...connect.H
 		connect.WithSchema(fileSystemServiceM3U8MethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	fileSystemServiceChmodHandler := connect.NewUnaryHandler(
+		FileSystemServiceChmodProcedure,
+		svc.Chmod,
+		connect.WithSchema(fileSystemServiceChmodMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	fileSystemServiceChtimesHandler := connect.NewUnaryHandler(
+		FileSystemServiceChtimesProcedure,
+		svc.Chtimes,
+		connect.WithSchema(fileSystemServiceChtimesMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/pixelfs.v1.FileSystemService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case FileSystemServiceListProcedure:
@@ -325,6 +372,10 @@ func NewFileSystemServiceHandler(svc FileSystemServiceHandler, opts ...connect.H
 			fileSystemServiceWriteHandler.ServeHTTP(w, r)
 		case FileSystemServiceM3U8Procedure:
 			fileSystemServiceM3U8Handler.ServeHTTP(w, r)
+		case FileSystemServiceChmodProcedure:
+			fileSystemServiceChmodHandler.ServeHTTP(w, r)
+		case FileSystemServiceChtimesProcedure:
+			fileSystemServiceChtimesHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -372,4 +423,12 @@ func (UnimplementedFileSystemServiceHandler) Write(context.Context, *connect.Req
 
 func (UnimplementedFileSystemServiceHandler) M3U8(context.Context, *connect.Request[v1.FileM3U8Request]) (*connect.Response[v1.FileM3U8Response], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pixelfs.v1.FileSystemService.M3U8 is not implemented"))
+}
+
+func (UnimplementedFileSystemServiceHandler) Chmod(context.Context, *connect.Request[v1.FileChmodRequest]) (*connect.Response[v1.FileChmodResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pixelfs.v1.FileSystemService.Chmod is not implemented"))
+}
+
+func (UnimplementedFileSystemServiceHandler) Chtimes(context.Context, *connect.Request[v1.FileChtimesRequest]) (*connect.Response[v1.FileChtimesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pixelfs.v1.FileSystemService.Chtimes is not implemented"))
 }

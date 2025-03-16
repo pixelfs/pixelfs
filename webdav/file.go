@@ -39,7 +39,7 @@ func (fi *fileInfo) Size() int64 {
 }
 
 func (fi *fileInfo) Mode() os.FileMode {
-	return os.FileMode(fi.file.Perm)
+	return os.FileMode(fi.file.Mode)
 }
 
 func (fi *fileInfo) ModTime() time.Time {

@@ -17,6 +17,7 @@ type GrpcV1Client struct {
 	AuthService       v1connect.AuthServiceClient
 	UserService       v1connect.UserServiceClient
 	NodeService       v1connect.NodeServiceClient
+	SyncService       v1connect.SyncServiceClient
 	BlockService      v1connect.BlockServiceClient
 	StorageService    v1connect.StorageServiceClient
 	LocationService   v1connect.LocationServiceClient
@@ -39,6 +40,11 @@ func NewGrpcV1Client(cfg *config.Config) *GrpcV1Client {
 			connect.WithInterceptors(newAuthInterceptor(cfg)),
 		),
 		NodeService: v1connect.NewNodeServiceClient(
+			client,
+			coreEndpoint,
+			connect.WithInterceptors(newAuthInterceptor(cfg)),
+		),
+		SyncService: v1connect.NewSyncServiceClient(
 			client,
 			coreEndpoint,
 			connect.WithInterceptors(newAuthInterceptor(cfg)),

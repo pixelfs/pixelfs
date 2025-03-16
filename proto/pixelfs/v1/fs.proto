@@ -18,6 +18,8 @@ service FileSystemService {
     rpc Read(FileReadRequest) returns (FileReadResponse) {}
     rpc Write(FileWriteRequest) returns (FileWriteResponse) {}
     rpc M3U8(FileM3U8Request) returns (FileM3U8Response) {}
+    rpc Chmod(FileChmodRequest) returns (FileChmodResponse) {}
+    rpc Chtimes(FileChtimesRequest) returns (FileChtimesResponse) {}
 }
 
 enum FileType {
@@ -35,12 +37,13 @@ message File {
     string   name     = 1;
     FileType type     = 2;
     int64    size     = 3;
-    uint32   perm     = 4;
+    uint32   mode     = 4;
     string   hash     = 5;
     string   user     = 6;
     double   duration = 7;
+    string   platform = 8;
 
-    reserved 8 to 18;
+    reserved 9 to 18;
     google.protobuf.Timestamp modified_at = 19;
     map<string, google.protobuf.Any> extensions = 20;
 }
@@ -98,6 +101,7 @@ message FileMoveResponse {}
 
 message FileMkdirRequest {
     FileContext context = 1;
+    google.protobuf.Timestamp mtime = 2;
 }
 
 message FileMkdirResponse {}
@@ -136,3 +140,18 @@ message FileM3U8Response {
     string      url = 1;
     double      duration = 2;
 }
+
+message FileChmodRequest {
+    FileContext context = 1;
+    uint32      mode = 2;
+}
+
+message FileChmodResponse {}
+
+message FileChtimesRequest {
+    FileContext context = 1;
+    google.protobuf.Timestamp atime = 2;
+    google.protobuf.Timestamp mtime = 3;
+}
+
+message FileChtimesResponse {}

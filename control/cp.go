@@ -9,6 +9,7 @@ import (
 	"connectrpc.com/connect"
 	pb "github.com/pixelfs/pixelfs/gen/pixelfs/v1"
 	"github.com/pixelfs/pixelfs/util"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (p *PixelFS) Cp(src *pb.FileContext, dest *pb.FileContext) error {
@@ -40,6 +41,7 @@ func (p *PixelFS) Cp(src *pb.FileContext, dest *pb.FileContext) error {
 			context.Background(),
 			connect.NewRequest(&pb.FileMkdirRequest{
 				Context: dest,
+				Mtime:   stat.Msg.File.ModifiedAt,
 			}),
 		)
 		if err != nil {
@@ -131,6 +133,21 @@ func (p *PixelFS) Cp(src *pb.FileContext, dest *pb.FileContext) error {
 		)
 		if err != nil {
 			return err
+		}
+
+		if index == blockCount {
+			_, err = p.Core.FileSystemService.Chtimes(
+				context.Background(),
+				connect.NewRequest(&pb.FileChtimesRequest{
+					Context: dest,
+					Atime:   timestamppb.Now(),
+					Mtime:   stat.Msg.File.ModifiedAt,
+				}),
+			)
+
+			if err != nil {
+				return err
+			}
 		}
 
 		bar.Add(1)

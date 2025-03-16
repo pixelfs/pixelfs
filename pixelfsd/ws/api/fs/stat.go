@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"connectrpc.com/connect"
 	"github.com/lesismal/arpc"
@@ -66,6 +67,8 @@ func Stat(ctx *arpc.Context) {
 			Size:       fileInfo.Size(),
 			Hash:       hash,
 			Duration:   duration,
+			Mode:       uint32(fileInfo.Mode()),
+			Platform:   runtime.GOOS,
 			ModifiedAt: timestamppb.New(fileInfo.ModTime()),
 		},
 	}

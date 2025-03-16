@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/maypok86/otter"
 	pb "github.com/pixelfs/pixelfs/gen/pixelfs/v1"
-	"github.com/pixelfs/pixelfs/log"
 )
 
 const (
@@ -22,17 +23,13 @@ var (
 )
 
 func init() {
-	var err error
-	cacheHash, err = otter.MustBuilder[string, string](10_000).
+	cacheHash, _ = otter.MustBuilder[string, string](10_000).
 		CollectStats().
 		Cost(func(key string, value string) uint32 {
 			return 1
 		}).
 		WithTTL(time.Hour).
 		Build()
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to create cache")
-	}
 }
 
 func GetFileHash(path string) (string, error) {
@@ -126,4 +123,25 @@ func GetFileType(fileInfo os.FileInfo) pb.FileType {
 	default:
 		return pb.FileType_UNKNOWN
 	}
+}
+
+func SplitPath(platform string, path string) (dir, file string) {
+	if platform == "windows" {
+		path = strings.ReplaceAll(path, "/", "\\")
+		lastSep := strings.LastIndex(path, "\\")
+		if lastSep == -1 {
+			return "", path
+		}
+		return path[:lastSep+1], path[lastSep+1:]
+	}
+
+	return filepath.Split(path)
+}
+
+func JoinPath(platform string, elems ...string) string {
+	if platform == "windows" {
+		return strings.ReplaceAll(filepath.Join(elems...), "/", "\\")
+	}
+
+	return strings.ReplaceAll(filepath.Join(elems...), "\\", "/")
 }

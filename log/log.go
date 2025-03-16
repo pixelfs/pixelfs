@@ -3,9 +3,11 @@ package log
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/pixelfs/pixelfs/util"
 	"github.com/jagottsicher/termcolor"
 	arpc "github.com/lesismal/arpc/log"
 	"github.com/rs/zerolog"
@@ -36,12 +38,26 @@ func SetLoggerColors() {
 		colors = false
 	}
 
+	zerolog.ErrorMarshalFunc = func(err error) any {
+		return strings.TrimPrefix(err.Error(), "internal: ")
+	}
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	Logger = log.Output(zerolog.ConsoleWriter{
-		Out:        os.Stdout,
-		TimeFormat: time.RFC3339,
-		NoColor:    !colors,
-	})
+
+	home, _ := util.GetHomeDir()
+	logDir := filepath.Join(home, "logs")
+	if err := util.EnsureDir(logDir); err != nil {
+		log.Fatal().Err(err).Msg("failed to create log directory")
+	}
+
+	logFile, err := os.OpenFile(filepath.Join(logDir, "pixelfs.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to open log file")
+	}
+
+	Logger = log.Output(zerolog.MultiLevelWriter(
+		zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339, NoColor: !colors},
+		zerolog.ConsoleWriter{Out: logFile, TimeFormat: time.RFC3339, NoColor: true},
+	))
 }
 
 func Debug() *zerolog.Event {
@@ -143,7 +159,7 @@ func (c *CliLogger) Msg(a any) {
 }
 
 func (c *CliLogger) Err(err error) {
-	c.Msg(err)
+	c.Msg(strings.TrimPrefix(err.Error(), "internal: "))
 }
 
 func (c *CliLogger) Msgf(format string, a ...any) {

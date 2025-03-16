@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+import "pixelfs/v1/fs.proto";
+import "google/protobuf/timestamp.proto";
+
+package pixelfs.v1;
+option  go_package = "github.com/pixelfs/pixelfs/gen/pixelfs/v1";
+
+service SyncService {
+    rpc Start(SyncStartRequest) returns (SyncStartResponse) {}
+    rpc Stop(SyncStopRequest) returns (SyncStopResponse) {}
+    rpc CreateSync(SyncCreateRequest) returns (SyncCreateResponse) {}
+    rpc RemoveSync(SyncRemoveRequest) returns (SyncRemoveResponse) {}
+    rpc GetSyncList(SyncGetListRequest) returns (SyncGetListResponse) {}
+    rpc GetSyncById(SyncGetByIdRequest) returns (SyncGetByIdResponse) {}
+    rpc LockCheck(SyncLockCheckRequest) returns (SyncLockCheckResponse) {}
+    rpc UpdateStatus(SyncUpdateStatusRequest) returns (SyncUpdateStatusResponse) {}
+}
+
+message Sync {
+    string        id = 1;
+    string        src_node_id = 2;
+    string        dest_node_id = 3;
+    string        name = 4;
+    bool          enabled = 5;
+    SyncStatus    status = 6;
+    FileContext   src_context = 7;
+    FileContext   dest_context = 8;
+    SyncConfig    config = 9;
+}
+
+enum SyncStatus {
+    UNSYNCED    = 0;
+    SYNCING     = 1;
+    SUCCESS     = 2;
+    ERROR       = 3;
+}
+
+message SyncConfig {
+    int64   interval = 1;
+    bool    duplex = 2;
+    int64   limit = 3;
+    string  log = 4;
+
+    google.protobuf.Timestamp last_synced_at = 5;
+}
+
+message SyncStartRequest {
+    string sync_id = 1;
+    string node_id = 2;
+}
+
+message SyncStartResponse {}
+
+message SyncStopRequest {
+    string sync_id = 1;
+    string node_id = 2;
+}
+
+message SyncStopResponse {}
+
+message SyncCreateRequest {
+    Sync sync = 1;
+}
+
+message SyncCreateResponse {
+    Sync sync = 1;
+}
+
+message SyncRemoveRequest {
+    string sync_id = 1;
+}
+
+message SyncRemoveResponse {}
+
+message SyncGetListRequest {
+    string node_id = 1;
+}
+
+message SyncGetListResponse {
+    repeated Sync syncs = 1;
+}
+
+message SyncGetByIdRequest {
+    string sync_id = 1;
+}
+
+message SyncGetByIdResponse {
+    Sync sync = 1;
+}
+
+message SyncLockCheckRequest {
+    FileContext context = 1;
+}
+
+message SyncLockCheckResponse {}
+
+message SyncUpdateStatusRequest {
+    string        sync_id = 1;
+    SyncStatus    status = 2;
+    string        log = 3;
+}
+
+message SyncUpdateStatusResponse {}

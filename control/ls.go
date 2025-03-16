@@ -54,9 +54,9 @@ func (p *PixelFS) Ls(ctx *pb.FileContext) error {
 
 		permissions := fmt.Sprintf(
 			"%s%s%s",
-			formatPermissions(file.Perm, 2),
-			formatPermissions(file.Perm, 1),
-			formatPermissions(file.Perm, 0),
+			formatPermissions(file.Mode, 2),
+			formatPermissions(file.Mode, 1),
+			formatPermissions(file.Mode, 0),
 		)
 
 		size := formatSize(file.Size, isDir)

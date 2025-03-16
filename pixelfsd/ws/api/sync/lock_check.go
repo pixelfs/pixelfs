@@ -1,10 +1,9 @@
-package fs
+package sync
 
 import (
 	"context"
-	"os"
+	"fmt"
 	"path/filepath"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/lesismal/arpc"
@@ -12,8 +11,8 @@ import (
 	"github.com/pixelfs/pixelfs/log"
 )
 
-func Mkdir(ctx *arpc.Context) {
-	var request pb.FileMkdirRequest
+func LockCheck(ctx *arpc.Context) {
+	var request pb.SyncLockCheckRequest
 	if err := ctx.Bind(&request); handleError(ctx, err) {
 		return
 	}
@@ -29,17 +28,12 @@ func Mkdir(ctx *arpc.Context) {
 	}
 
 	absolutePath := filepath.Join(location.Msg.Location.Path, request.Context.Path)
-	if err = os.MkdirAll(absolutePath, 0755); handleError(ctx, err) {
+	if _, exists := fileSync.Lock.Load(absolutePath); exists {
+		ctx.Error(fmt.Errorf("file %s is being syncing", absolutePath))
 		return
 	}
 
-	if request.Mtime != nil {
-		if err = os.Chtimes(absolutePath, time.Now(), request.Mtime.AsTime()); handleError(ctx, err) {
-			return
-		}
-	}
-
-	if err = ctx.Write(&pb.FileRemoveResponse{}); err != nil {
+	if err := ctx.Write(&pb.SyncLockCheckResponse{}); err != nil {
 		log.Error().Caller().Err(err).Msg("write response")
 	}
 }

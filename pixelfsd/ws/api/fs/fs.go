@@ -10,7 +10,7 @@ var (
 	rpc *core.GrpcV1Client
 )
 
-func InitRouters(cfg *config.Config, router arpc.Handler) error {
+func InitHandler(cfg *config.Config, router arpc.Handler) error {
 	rpc = core.NewGrpcV1Client(cfg)
 
 	// add routes
@@ -24,6 +24,8 @@ func InitRouters(cfg *config.Config, router arpc.Handler) error {
 	router.Handle("/fs/read", Read)
 	router.Handle("/fs/write", Write)
 	router.Handle("/fs/m3u8", M3U8)
+	router.Handle("/fs/chmod", Chmod)
+	router.Handle("/fs/chtimes", Chtimes)
 
 	return nil
 }

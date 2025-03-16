@@ -43,6 +43,12 @@ func parseFileContext(input string) (*pb.FileContext, error) {
 	}
 
 	location, absolutePath := splitLocationAndPath(absolutePath)
+
+	// ensure path starts with a slash
+	if !strings.HasPrefix(absolutePath, "/") {
+		absolutePath = "/" + absolutePath
+	}
+
 	return &pb.FileContext{NodeId: nodeId, Location: location, Path: absolutePath}, nil
 }
 

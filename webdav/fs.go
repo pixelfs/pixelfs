@@ -136,7 +136,9 @@ func (fs *fileSystem) stat(name string) (*pb.File, error) {
 	if err != nil {
 		log.Error().Err(err).Str("name", name).Msg("stat failed")
 
-		if strings.Contains(err.Error(), "no such file or directory") {
+		if strings.Contains(err.Error(), "no such file or directory") ||
+			strings.Contains(err.Error(), "The system cannot find the path specified") ||
+			strings.Contains(err.Error(), "The system cannot find the file specified") {
 			return nil, os.ErrNotExist
 		}
 
