@@ -4,6 +4,16 @@
 
 ## 安装 PixelFS
 
+### 桌面版 (GUI) 下载
+
+前往 [PixelFS Desktop](https://github.com/pixelfs/pixelfs-desktop/releases) 下载桌面版 `PixelFS`。
+
+#### 预览图
+
+![](../screenshots/dark_1.png)
+
+### 命令行安装
+
 ::: details Ubuntu/Dedian
 ```shell
 # 下载 PixelFS 二进制文件 (请根据需要选择版本)
@@ -49,7 +59,7 @@ brew services start pixelfs
 ```
 :::
 
-### 手动安装
+#### 手动安装
 
 1. 前往 [Releases](https://github.com/pixelfs/pixelfs/releases)，下载适合你操作系统和架构的 `PixelFS` 二进制文件。
 2. 解压下载的文件，并将解压后的二进制文件移动到系统路径（如 `/usr/local/bin`）或将所在目录添加到系统的 `PATH` 环境变量中。

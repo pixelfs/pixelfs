@@ -40,6 +40,7 @@ function sidebar(): DefaultTheme.Sidebar {
                 {text: '什么是 PixelFS?', link: '/zh-hans/'},
                 {text: '快速入门', link: '/zh-hans/quick-start'},
                 {text: '配置', link: '/zh-hans/configuration'},
+                {text: '文件同步', link: '/zh-hans/sync'},
                 {text: 'WebDAV 服务', link: '/zh-hans/webdav'},
                 {text: '常见问题', link: '/zh-hans/faq'},
             ]
@@ -64,6 +65,7 @@ function sidebar(): DefaultTheme.Sidebar {
                 {text: 'Shell', link: '/zh-hans/commands/shell'},
                 {text: 'Storage', link: '/zh-hans/commands/storage'},
                 {text: 'StorageLink', link: '/zh-hans/commands/storage-link'},
+                {text: 'Sync', link: '/zh-hans/commands/sync'},
                 {text: 'Touch', link: '/zh-hans/commands/touch'},
                 {text: 'Upload', link: '/zh-hans/commands/upload'},
                 {text: 'Version', link: '/zh-hans/commands/version'},

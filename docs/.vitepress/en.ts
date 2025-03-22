@@ -33,6 +33,7 @@ function sidebar(): DefaultTheme.Sidebar {
                 {text: 'What is PixelFS?', link: '/'},
                 {text: 'Quick Start', link: '/quick-start'},
                 {text: 'Configuration', link: '/configuration'},
+                {text: 'File Sync', link: '/sync'},
                 {text: 'WebDAV', link: '/webdav'},
                 {text: 'FAQ', link: '/faq'},
             ]
@@ -57,6 +58,7 @@ function sidebar(): DefaultTheme.Sidebar {
                 {text: 'Shell', link: '/commands/shell'},
                 {text: 'Storage', link: '/commands/storage'},
                 {text: 'StorageLink', link: '/commands/storage-link'},
+                {text: 'Sync', link: '/commands/sync'},
                 {text: 'Touch', link: '/commands/touch'},
                 {text: 'Upload', link: '/commands/upload'},
                 {text: 'Version', link: '/commands/version'},

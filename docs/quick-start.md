@@ -4,6 +4,16 @@ You can download the `PixelFS` binary from [Releases](https://github.com/pixelfs
 
 ## Installing PixelFS
 
+### Desktop Version (GUI) Download
+
+Go to [PixelFS Desktop](https://github.com/pixelfs/pixelfs-desktop/releases) to download the desktop version of `PixelFS`.
+
+#### Preview
+
+![](./screenshots/dark_1.png)
+
+### Command Line Installation
+
 ::: details Ubuntu/Dedian
 ```shell
 # Download the PixelFS binary (choose the version as needed)
@@ -49,7 +59,7 @@ brew services start pixelfs
 ```
 :::
 
-### Manual Installation
+#### Manual Installation
 
 1. Go to [Releases](https://github.com/pixelfs/pixelfs/releases) and download the `PixelFS` binary suitable for your operating system and architecture.
 2. Extract the downloaded file and move the extracted binary to a system path (e.g., /usr/local/bin) or add its directory to your system’s PATH environment variable.
