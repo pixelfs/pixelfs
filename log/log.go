@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pixelfs/pixelfs/util"
 	"github.com/jagottsicher/termcolor"
 	arpc "github.com/lesismal/arpc/log"
+	"github.com/pixelfs/pixelfs/util"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -56,7 +56,7 @@ func SetLoggerColors() {
 
 	Logger = log.Output(zerolog.MultiLevelWriter(
 		zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339, NoColor: !colors},
-		zerolog.ConsoleWriter{Out: logFile, TimeFormat: time.RFC3339, NoColor: true},
+		zerolog.ConsoleWriter{Out: logFile, TimeFormat: time.RFC3339, NoColor: !colors},
 	))
 }
 
