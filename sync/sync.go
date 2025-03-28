@@ -1,7 +1,9 @@
 package sync
 
 import (
+	"bufio"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -36,6 +38,13 @@ type FileSync struct {
 	Lock    sync.Map
 	NodeId  string
 	watcher *Watcher
+}
+
+type ErrorReport struct {
+	Op       string
+	Name     string
+	Platform string
+	Dest     *pb.FileContext
 }
 
 func NewFileSync(cfg *config.Config) (*FileSync, error) {
@@ -178,6 +187,13 @@ func (fs *FileSync) watcherFiles(sync *pb.Sync, srcDir, platform string, dest *p
 					defer sem.Release(1)
 
 					if err := fs.handleWatcherEvent(event, platform, destContext, watcher); err != nil {
+						_ = fs.writeErrorReport(&ErrorReport{
+							Op:       event.Op.String(),
+							Name:     event.Name,
+							Platform: platform,
+							Dest:     destContext,
+						})
+
 						log.Error().
 							Str("event", event.Op.String()).
 							Str("name", event.Name).Err(err).Msg("sync handle watcher event")
@@ -214,6 +230,20 @@ func (fs *FileSync) scanFiles(srcDir, platform string, dest *pb.FileContext, lim
 	// cancel context
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	// handle error report
+	if err := fs.handleErrorReport(func(report *ErrorReport) error {
+		switch report.Op {
+		case "REMOVE", "RENAME":
+			return fs.handleRemove(report.Name, report.Dest)
+		case "CHMOD":
+			return fs.handleChmod(report.Name, report.Dest)
+		default:
+			return nil
+		}
+	}); err != nil {
+		return err
+	}
 
 	err := filepath.Walk(srcDir, func(srcPath string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -275,6 +305,9 @@ func (fs *FileSync) copyFile(src string, dest *pb.FileContext, platform string) 
 
 	fileInfo, err := os.Stat(src)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil // 没有错误日志，直接返回
+		}
 		return err
 	}
 
@@ -375,15 +408,103 @@ func (fs *FileSync) getTaskId(syncId string) string {
 func (fs *FileSync) isIgnore(path string) bool {
 	ignorePatterns := []string{tmpPrefix + "*", ".DS_Store"}
 
+	if strings.Count(filepath.ToSlash(path), "/") > 20 {
+		return true
+	}
+
 	// check .pixelfsignore
-	fileDir, _ := filepath.Split(path)
-	ignoreFile := filepath.Join(fileDir, ".pixelfsignore")
-	if content, err := os.ReadFile(ignoreFile); err == nil {
-		ignorePatterns = append(ignorePatterns, strings.Split(strings.TrimSpace(string(content)), "\n")...)
+	dir := path
+	for {
+		dir = filepath.Dir(dir)
+		ignoreFile := filepath.Join(dir, ".pixelfsignore")
+		if content, err := os.ReadFile(ignoreFile); err == nil {
+			ignorePatterns = append(ignorePatterns, strings.Split(strings.TrimSpace(string(content)), "\n")...)
+		}
+
+		if dir == "/" || dir == filepath.VolumeName(dir)+`\` {
+			break
+		}
 	}
 
 	ignoreMatcher := gitignore.CompileIgnoreLines(ignorePatterns...)
 	return ignoreMatcher.MatchesPath(path)
+}
+
+func (fs *FileSync) handleErrorReport(handleFunc func(*ErrorReport) error) error {
+	home, err := util.GetHomeDir()
+	if err != nil {
+		return err
+	}
+
+	logPath := filepath.Join(home, "sync_error_report")
+	tmpPath := logPath + ".tmp"
+
+	file, err := os.Open(logPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil // 没有错误日志，直接返回
+		}
+		return err
+	}
+	defer file.Close()
+
+	tmpFile, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer tmpFile.Close()
+
+	scanner := bufio.NewScanner(file)
+	var hasProcessed bool
+
+	for scanner.Scan() {
+		var entry ErrorReport
+		line := scanner.Text()
+
+		if err := json.Unmarshal([]byte(line), &entry); err != nil {
+			_, _ = tmpFile.WriteString(line + "\n")
+			continue
+		}
+
+		if err := handleFunc(&entry); err != nil {
+			_, _ = tmpFile.WriteString(line + "\n")
+		} else {
+			hasProcessed = true
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	if hasProcessed {
+		if err := os.Rename(tmpPath, logPath); err != nil {
+			return err
+		}
+	} else {
+		_ = os.Remove(tmpPath)
+	}
+
+	return nil
+}
+
+func (fs *FileSync) writeErrorReport(entry *ErrorReport) error {
+	jsonData, _ := json.Marshal(entry)
+	jsonData = append(jsonData, '\n')
+
+	home, err := util.GetHomeDir()
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(filepath.Join(home, "sync_error_report"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write(jsonData)
+	return err
 }
 
 func (fs *FileSync) lockFile(name string) {
