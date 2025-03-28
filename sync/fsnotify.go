@@ -74,8 +74,12 @@ func (fs *FileSync) handleRemove(name string, destContext *pb.FileContext) error
 	defer fs.unlockFile(name)
 
 	if _, err := fs.stat(destContext); err != nil {
+		if os.IsNotExist(err) {
+			return nil // 没有错误日志，直接返回
+		}
 		return err
 	}
+
 	return fs.remove(destContext)
 }
 
@@ -85,11 +89,17 @@ func (fs *FileSync) handleChmod(name string, destContext *pb.FileContext) error 
 
 	fileInfo, err := os.Stat(name)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil // 没有错误日志，直接返回
+		}
 		return err
 	}
 
 	destInfo, err := fs.stat(destContext)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil // 没有错误日志，直接返回
+		}
 		return err
 	}
 	if destInfo.Platform == "windows" {
