@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (p *PixelFS) Cp(src *pb.FileContext, dest *pb.FileContext) error {
+func (p *PixelFS) Cp(src *pb.FileContext, dest *pb.FileContext) (err error) {
 	if src.NodeId == dest.NodeId {
 		_, err := p.Core.FileSystemService.Copy(
 			context.Background(),
@@ -77,6 +77,27 @@ func (p *PixelFS) Cp(src *pb.FileContext, dest *pb.FileContext) error {
 
 		return nil
 	}
+
+	destFileDir, destFileName := filepath.Split(dest.Path)
+	dest.Path = filepath.ToSlash(filepath.Join(destFileDir, tmpPrefix+destFileName))
+
+	defer func() {
+		if err == nil {
+			_, err = p.Core.FileSystemService.Move(
+				context.Background(),
+				connect.NewRequest(&pb.FileMoveRequest{
+					Src: dest,
+					Dest: &pb.FileContext{
+						NodeId:   dest.NodeId,
+						Location: dest.Location,
+						Path:     filepath.ToSlash(filepath.Join(destFileDir, destFileName)),
+					},
+				}),
+			)
+		} else {
+			_ = p.Rm(dest, false)
+		}
+	}()
 
 	location, err := p.Core.LocationService.GetLocationByContext(
 		context.Background(),

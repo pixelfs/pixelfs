@@ -12,7 +12,7 @@ import (
 	"github.com/pixelfs/pixelfs/util"
 )
 
-func (p *PixelFS) Upload(ctx *pb.FileContext, input string) error {
+func (p *PixelFS) Upload(ctx *pb.FileContext, input string) (err error) {
 	location, err := p.Core.LocationService.GetLocationByContext(
 		context.Background(),
 		connect.NewRequest(&pb.GetLocationByContextRequest{
@@ -74,6 +74,27 @@ func (p *PixelFS) Upload(ctx *pb.FileContext, input string) error {
 
 		return nil
 	}
+
+	fileDir, fileName := filepath.Split(ctx.Path)
+	ctx.Path = filepath.ToSlash(filepath.Join(fileDir, tmpPrefix+fileName))
+
+	defer func() {
+		if err == nil {
+			_, err = p.Core.FileSystemService.Move(
+				context.Background(),
+				connect.NewRequest(&pb.FileMoveRequest{
+					Src: ctx,
+					Dest: &pb.FileContext{
+						NodeId:   ctx.NodeId,
+						Location: ctx.Location,
+						Path:     filepath.ToSlash(filepath.Join(fileDir, fileName)),
+					},
+				}),
+			)
+		} else {
+			_ = p.Rm(ctx, false)
+		}
+	}()
 
 	hash, err := util.GetFileHash(input)
 	if err != nil {

@@ -9,6 +9,8 @@ import (
 	"github.com/pixelfs/pixelfs/rpc/daemon"
 )
 
+var tmpPrefix = ".pixelfstmp."
+
 type PixelFS struct {
 	cfg    *config.Config
 	Core   *core.GrpcV1Client

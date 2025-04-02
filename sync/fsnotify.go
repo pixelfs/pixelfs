@@ -1,15 +1,12 @@
 package sync
 
 import (
-	"context"
 	"os"
 	"runtime"
 	"time"
 
-	"connectrpc.com/connect"
 	"github.com/fsnotify/fsnotify"
 	pb "github.com/pixelfs/pixelfs/gen/pixelfs/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (fs *FileSync) handleWatcherEvent(event fsnotify.Event, platform string, destContext *pb.FileContext, watcher *fsnotify.Watcher) error {
@@ -34,30 +31,10 @@ func (fs *FileSync) handleCreate(name, platform string, destContext *pb.FileCont
 	}
 
 	if fileInfo.IsDir() {
-		if err = watcher.Add(name); err != nil {
-			return err
-		}
-
-		if runtime.GOOS == "windows" {
-			_, err = fs.Core.FileSystemService.Mkdir(
-				context.Background(),
-				connect.NewRequest(&pb.FileMkdirRequest{
-					Context: destContext,
-					Mtime:   timestamppb.New(fileInfo.ModTime()),
-				}),
-			)
-
-			return err
-		}
+		_ = watcher.Add(name)
 	}
 
-	if runtime.GOOS != "windows" {
-		if err = fs.copyFile(name, destContext, platform); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return fs.copyFile(name, destContext, platform)
 }
 
 func (fs *FileSync) handleWrite(name, platform string, destContext *pb.FileContext) error {
