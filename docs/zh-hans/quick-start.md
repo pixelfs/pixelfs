@@ -8,9 +8,8 @@
 
 前往 [PixelFS Desktop](https://github.com/pixelfs/pixelfs-desktop/releases) 下载桌面版 `PixelFS`。
 
-#### 预览图
-
 ![](../screenshots/dark_1.png)
+![](../screenshots/light_1.png)
 
 ### 命令行安装
 

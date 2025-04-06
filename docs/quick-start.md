@@ -8,9 +8,8 @@ You can download the `PixelFS` binary from [Releases](https://github.com/pixelfs
 
 Go to [PixelFS Desktop](https://github.com/pixelfs/pixelfs-desktop/releases) to download the desktop version of `PixelFS`.
 
-#### Preview
-
 ![](./screenshots/dark_1.png)
+![](./screenshots/light_1.png)
 
 ### Command Line Installation
 
