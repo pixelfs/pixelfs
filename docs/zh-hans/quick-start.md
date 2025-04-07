@@ -16,10 +16,10 @@
 ::: details Ubuntu/Dedian
 ```shell
 # 下载 PixelFS 二进制文件 (请根据需要选择版本)
-wget https://github.com/pixelfs/pixelfs/releases/download/v1.0.0/pixelfs_1.0.0_linux_amd64.deb
+wget https://github.com/pixelfs/pixelfs/releases/download/v1.1.4/pixelfs_1.1.4_linux_amd64.deb
 
 # 安装 PixelFS
-sudo dpkg -i pixelfs_1.0.0_linux_amd64.deb
+sudo dpkg -i pixelfs_1.1.4_linux_amd64.deb
 
 # 启动 PixelFS 服务 (以用户模式运行)
 systemctl --user start pixelfs
@@ -33,10 +33,10 @@ loginctl enable-linger
 ::: details CentOS/RHEL
 ```shell
 # 下载 PixelFS 二进制文件 (请根据需要选择版本)
-wget https://github.com/pixelfs/pixelfs/releases/download/v1.0.0/pixelfs_1.0.0_linux_amd64.rpm
+wget https://github.com/pixelfs/pixelfs/releases/download/v1.1.4/pixelfs_1.1.4_linux_amd64.rpm
 
 # 安装 PixelFS
-sudo rpm -i pixelfs_1.0.0_linux_amd64.rpm
+sudo rpm -i pixelfs_1.1.4_linux_amd64.rpm
 
 # 启动 PixelFS 服务 (以用户模式运行)
 systemctl --user start pixelfs

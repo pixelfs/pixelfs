@@ -16,10 +16,10 @@ Go to [PixelFS Desktop](https://github.com/pixelfs/pixelfs-desktop/releases) to 
 ::: details Ubuntu/Dedian
 ```shell
 # Download the PixelFS binary (choose the version as needed)
-wget https://github.com/pixelfs/pixelfs/releases/download/v1.0.0/pixelfs_1.0.0_linux_amd64.deb
+wget https://github.com/pixelfs/pixelfs/releases/download/v1.1.4/pixelfs_1.1.4_linux_amd64.deb
 
 # Install PixelFS
-sudo dpkg -i pixelfs_1.0.0_linux_amd64.deb
+sudo dpkg -i pixelfs_1.1.4_linux_amd64.deb
 
 # Start the PixelFS service (run in user mode)
 systemctl --user start pixelfs
@@ -33,10 +33,10 @@ loginctl enable-linger
 ::: details CentOS/RHEL
 ```shell
 # Download the PixelFS binary (choose the version as needed)
-wget https://github.com/pixelfs/pixelfs/releases/download/v1.0.0/pixelfs_1.0.0_linux_amd64.rpm
+wget https://github.com/pixelfs/pixelfs/releases/download/v1.1.4/pixelfs_1.1.4_linux_amd64.rpm
 
 # Install PixelFS
-sudo rpm -i pixelfs_1.0.0_linux_amd64.rpm
+sudo rpm -i pixelfs_1.1.4_linux_amd64.rpm
 
 # Start the PixelFS service (run in user mode)
 systemctl --user start pixelfs
